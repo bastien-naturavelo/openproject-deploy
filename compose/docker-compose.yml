@@ -51,7 +51,7 @@ services:
 
   proxy:
     build:
-      context: ./proxy
+      context: ./compose/proxy
       args:
         APP_HOST: web
     image: openproject/proxy:${TAG:-14-slim}
