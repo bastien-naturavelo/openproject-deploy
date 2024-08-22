@@ -1,6 +1,9 @@
 networks:
   frontend:
   backend:
+  app_network:
+    external: true
+    name: app_network
 
 volumes:
   pgdata:
@@ -28,17 +31,17 @@ x-op-app: &app
     - "${OPDATA:-opdata}:/var/openproject/assets"
 
 services:
-  db:
-    image: postgres:13
-    <<: *restart_policy
-    stop_grace_period: "3s"
-    volumes:
-      - "${PGDATA:-pgdata}:/var/lib/postgresql/data"
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-p4ssw0rd}
-      POSTGRES_DB: openproject
-    networks:
-      - backend
+#  db:
+#    image: postgres:13
+#    <<: *restart_policy
+#    stop_grace_period: "3s"
+#    volumes:
+#      - "${PGDATA:-pgdata}:/var/lib/postgresql/data"
+#    environment:
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-p4ssw0rd}
+#      POSTGRES_DB: openproject
+#    networks:
+#      - backend
 
   cache:
     image: memcached
@@ -46,19 +49,19 @@ services:
     networks:
       - backend
 
-  proxy:
-    build:
-      context: ./proxy
-      args:
-        APP_HOST: web
-    image: openproject/proxy:${TAG:-14-slim}
-    <<: *restart_policy
-    ports:
-      - "${PORT:-8080}:80"
-    depends_on:
-      - web
-    networks:
-      - frontend
+#  proxy:
+#    build:
+#      context: ./proxy
+#      args:
+#        APP_HOST: web
+#    image: openproject/proxy:${TAG:-14-slim}
+#    <<: *restart_policy
+#    ports:
+#      - "${PORT:-8080}:80"
+#    depends_on:
+#      - web
+#    networks:
+#      - frontend
 
   web:
     <<: *app
@@ -66,8 +69,9 @@ services:
     networks:
       - frontend
       - backend
+      - app_network
     depends_on:
-      - db
+#      - db
       - cache
       - seeder
     labels:
@@ -93,8 +97,9 @@ services:
     command: "./docker/prod/worker"
     networks:
       - backend
+      - app_network
     depends_on:
-      - db
+#      - db
       - cache
       - seeder
 
@@ -103,8 +108,9 @@ services:
     command: "./docker/prod/cron"
     networks:
       - backend
+      - app_network
     depends_on:
-      - db
+#      - db
       - cache
       - seeder
 
